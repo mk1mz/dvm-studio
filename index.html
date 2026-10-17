@@ -1,0 +1,299 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>DVM Studio — Dynamic Viewport Media Editor & Reference Player</title>
+  <meta name="description" content="Reference player and visual viewport timeline authoring editor for Dynamic Viewport Media (DVM).">
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+  <link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700&family=JetBrains+Mono:wght@400;500;600&family=Outfit:wght@500;600;700&display=swap" rel="stylesheet">
+  <link rel="stylesheet" href="style.css">
+</head>
+<body>
+  <div class="app-container">
+    <!-- Top Navigation Header -->
+    <header class="app-header">
+      <div class="brand">
+        <div class="brand-logo">
+          <svg viewBox="0 0 28 28" width="24" height="24" fill="none">
+            <rect x="2" y="2" width="24" height="24" rx="5" stroke="currentColor" stroke-width="2" stroke-dasharray="3 3"/>
+            <rect x="7" y="5" width="14" height="18" rx="3" fill="url(#brand-grad)"/>
+            <defs>
+              <linearGradient id="brand-grad" x1="7" y1="5" x2="21" y2="23" gradientUnits="userSpaceOnUse">
+                <stop stop-color="#00f2fe"/>
+                <stop offset="1" stop-color="#4facfe"/>
+              </linearGradient>
+            </defs>
+          </svg>
+        </div>
+        <div class="brand-text">
+          <h1>DVM Studio</h1>
+          <span class="badge">v0.1 Reference</span>
+        </div>
+      </div>
+
+      <!-- Mode Toggle -->
+      <div class="mode-switcher">
+        <button id="btn-mode-player" class="mode-btn active" title="Reference Player Mode">
+          <svg width="16" height="16" viewBox="0 0 24 24" fill="currentColor"><path d="M8 5v14l11-7z"/></svg>
+          <span>Player</span>
+        </button>
+        <button id="btn-mode-editor" class="mode-btn" title="Visual Timeline Editor Mode">
+          <svg width="16" height="16" viewBox="0 0 24 24" fill="currentColor"><path d="M3 17.25V21h3.75L17.81 9.94l-3.75-3.75L3 17.25zM20.71 7.04c.39-.39.39-1.02 0-1.41l-2.34-2.34c-.39-.39-1.02-.39-1.41 0l-1.83 1.83 3.75 3.75 1.83-1.83z"/></svg>
+          <span>Editor</span>
+        </button>
+      </div>
+
+      <!-- Quick Preset & Video Controls -->
+      <div class="header-actions">
+        <label class="btn btn-secondary" for="video-file-input">
+          <svg width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M21 15v4a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2v-4"/><polyline points="17 8 12 3 7 8"/><line x1="12" y1="3" x2="12" y2="15"/></svg>
+          <span>Load Video</span>
+          <input type="file" id="video-file-input" accept="video/mp4,video/webm,video/quicktime" style="display:none">
+        </label>
+
+        <button id="btn-load-synthetic" class="btn btn-secondary" title="Load synthetic dynamic test generator">
+          <span>Test Pattern</span>
+        </button>
+
+        <div class="dropdown">
+          <button id="btn-presets" class="btn btn-secondary">
+            <span>Presets</span>
+            <svg width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><polyline points="6 9 12 15 18 9"/></svg>
+          </button>
+          <div class="dropdown-menu" id="presets-menu">
+            <a href="#" data-preset="portrait-square-landscape">9:16 &rarr; 1:1 &rarr; 16:9 &rarr; 9:16 (PSL)</a>
+            <a href="#" data-preset="era-cuts">Era Cuts (Hard cuts)</a>
+            <a href="#" data-preset="slow-push-in">Slow Push-In (Smooth sweep)</a>
+          </div>
+        </div>
+
+        <button id="btn-export-json" class="btn btn-primary" title="Export DVM Timeline JSON">
+          <svg width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M21 15v4a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2v-4"/><polyline points="7 10 12 15 17 10"/><line x1="12" y1="15" x2="12" y2="3"/></svg>
+          <span>Export JSON</span>
+        </button>
+      </div>
+    </header>
+
+    <!-- Main Workspace -->
+    <main class="workspace">
+      <!-- Left/Center Stage Area -->
+      <section class="stage-section">
+        <!-- Display Settings Toolbar -->
+        <div class="stage-toolbar">
+          <div class="fit-modes" id="fit-mode-group">
+            <span class="label">Viewport Fit:</span>
+            <button class="pill-btn active" data-fit="contain" title="Scale uniformly to fit window">Contain</button>
+            <button class="pill-btn" data-fit="cover" title="Crop viewport to fill window">Cover</button>
+            <button class="pill-btn" data-fit="free" title="Show full canvas with crop outline">Full Canvas</button>
+          </div>
+
+          <div class="window-aspect-presets">
+            <span class="label">Simulated Screen:</span>
+            <select id="screen-aspect-select">
+              <option value="9/16">9:16 (Phone / Reel)</option>
+              <option value="1/1">1:1 (Square)</option>
+              <option value="16/9" selected>16:9 (Desktop / TV)</option>
+              <option value="4/5">4:5 (Instagram Feed)</option>
+              <option value="21/9">21:9 (Ultrawide)</option>
+            </select>
+          </div>
+
+          <div class="hud-toggle">
+            <label class="toggle-switch">
+              <input type="checkbox" id="toggle-debug-overlay" checked>
+              <span class="slider"></span>
+            </label>
+            <span class="label">Debug Overlay</span>
+          </div>
+        </div>
+
+        <!-- Viewport Stage Container -->
+        <div class="stage-viewport" id="stage-viewport">
+          <!-- Outer Display Device Frame -->
+          <div class="screen-frame" id="screen-frame">
+            <!-- Simulated Video Canvas Screen -->
+            <div class="canvas-wrapper" id="canvas-wrapper">
+              <video id="media-video" playsinline muted preload="auto" style="display:none"></video>
+              <canvas id="stage-canvas" width="1920" height="1080"></canvas>
+
+              <!-- Interactive Crop Overlay for Editor Mode -->
+              <div class="crop-overlay" id="crop-overlay">
+                <div class="crop-box" id="crop-box">
+                  <div class="crop-handle handle-nw" data-handle="nw"></div>
+                  <div class="crop-handle handle-n" data-handle="n"></div>
+                  <div class="crop-handle handle-ne" data-handle="ne"></div>
+                  <div class="crop-handle handle-e" data-handle="e"></div>
+                  <div class="crop-handle handle-se" data-handle="se"></div>
+                  <div class="crop-handle handle-s" data-handle="s"></div>
+                  <div class="crop-handle handle-sw" data-handle="sw"></div>
+                  <div class="crop-handle handle-w" data-handle="w"></div>
+                  <div class="crop-grid"></div>
+                  <div class="crop-tag" id="crop-tag">9:16 (1080&times;1920)</div>
+                </div>
+              </div>
+            </div>
+
+            <!-- Debug HUD Overlay -->
+            <div class="debug-hud" id="debug-hud">
+              <div class="hud-item"><span class="hud-lbl">Time:</span> <span class="hud-val" id="hud-pts">0.000s</span></div>
+              <div class="hud-item"><span class="hud-lbl">Event:</span> <span class="hud-val" id="hud-event">#0 (Cut)</span></div>
+              <div class="hud-item"><span class="hud-lbl">Target:</span> <span class="hud-val" id="hud-rect">[0, 0, 1080, 1920]</span></div>
+              <div class="hud-item"><span class="hud-lbl">Render:</span> <span class="hud-val" id="hud-render">1080&times;1920 (9:16)</span></div>
+              <div class="hud-item"><span class="hud-lbl">Sync:</span> <span class="hud-val hud-ok" id="hud-sync">&plusmn;0 frame</span></div>
+            </div>
+          </div>
+        </div>
+
+        <!-- Playback Transport Bar -->
+        <div class="transport-bar">
+          <div class="time-display" id="time-display">00:00.000 / 00:12.000</div>
+
+          <div class="transport-controls">
+            <button class="ctrl-btn" id="btn-step-back" title="Step Back 1 Frame">
+              <svg width="18" height="18" viewBox="0 0 24 24" fill="currentColor"><path d="M6 6h2v12H6zm3.5 6l8.5 6V6z"/></svg>
+            </button>
+            <button class="ctrl-btn btn-play" id="btn-play-pause" title="Play / Pause">
+              <svg width="22" height="22" viewBox="0 0 24 24" fill="currentColor" id="play-icon"><path d="M8 5v14l11-7z"/></svg>
+            </button>
+            <button class="ctrl-btn" id="btn-step-fwd" title="Step Forward 1 Frame">
+              <svg width="18" height="18" viewBox="0 0 24 24" fill="currentColor"><path d="M6 18l8.5-6L6 6v12zM16 6v12h2V6h-2z"/></svg>
+            </button>
+          </div>
+
+          <div class="transport-extras">
+            <select id="rate-select" class="rate-select">
+              <option value="0.25">0.25&times;</option>
+              <option value="0.5">0.5&times;</option>
+              <option value="1.0" selected>1.0&times;</option>
+              <option value="2.0">2.0&times;</option>
+            </select>
+            <button class="ctrl-btn-small" id="btn-loop" title="Toggle Loop">
+              <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><polyline points="17 1 21 5 17 9"/><path d="M3 11V9a4 4 0 0 1 4-4h14"/><polyline points="7 23 3 19 7 15"/><path d="M21 13v2a4 4 0 0 1-4 4H3"/></svg>
+            </button>
+          </div>
+        </div>
+
+        <!-- Timeline & Keyframe Track -->
+        <div class="timeline-container">
+          <div class="timeline-header">
+            <div class="timeline-title">
+              <span>Viewport Events Track</span>
+              <span class="event-count" id="event-count-badge">4 events</span>
+            </div>
+            <div class="timeline-actions">
+              <button class="btn-xs btn-primary" id="btn-add-event">
+                <svg width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><line x1="12" y1="5" x2="12" y2="19"/><line x1="5" y1="12" x2="19" y2="12"/></svg>
+                <span>Add Keyframe</span>
+              </button>
+              <button class="btn-xs btn-secondary" id="btn-split-event">Split</button>
+            </div>
+          </div>
+
+          <!-- Ruler & Scrubber Area -->
+          <div class="timeline-track-area" id="timeline-track-area">
+            <div class="timeline-ruler" id="timeline-ruler"></div>
+            <div class="timeline-blocks" id="timeline-blocks"></div>
+            <div class="timeline-playhead" id="timeline-playhead">
+              <div class="playhead-needle"></div>
+              <div class="playhead-handle"></div>
+            </div>
+          </div>
+        </div>
+      </section>
+
+      <!-- Right Sidebar: Event & Viewport Inspector -->
+      <aside class="sidebar-inspector">
+        <div class="sidebar-tabs">
+          <button class="tab-btn active" data-tab="inspector">Inspector</button>
+          <button class="tab-btn" data-tab="events">Events (<span id="tab-count">4</span>)</button>
+          <button class="tab-btn" data-tab="export">JSON</button>
+        </div>
+
+        <!-- Inspector Tab Content -->
+        <div class="tab-content active" id="tab-inspector">
+          <div class="section-title">Canvas Specification</div>
+          <div class="input-grid-2">
+            <div class="field">
+              <label>Canvas Width</label>
+              <input type="number" id="inp-canvas-w" value="1920" min="1" max="16384">
+            </div>
+            <div class="field">
+              <label>Canvas Height</label>
+              <input type="number" id="inp-canvas-h" value="1920" min="1" max="16384">
+            </div>
+          </div>
+
+          <div class="section-title">Active Viewport Rectangle</div>
+          <div class="aspect-chips">
+            <button class="chip" data-aspect="9/16">9:16</button>
+            <button class="chip" data-aspect="1/1">1:1</button>
+            <button class="chip" data-aspect="16/9">16:9</button>
+            <button class="chip" data-aspect="4/5">4:5</button>
+            <button class="chip" data-aspect="free">Custom</button>
+          </div>
+
+          <div class="input-grid-2">
+            <div class="field">
+              <label>X (Left)</label>
+              <input type="number" id="inp-rect-x" value="420" min="0">
+            </div>
+            <div class="field">
+              <label>Y (Top)</label>
+              <input type="number" id="inp-rect-y" value="0" min="0">
+            </div>
+            <div class="field">
+              <label>Width</label>
+              <input type="number" id="inp-rect-w" value="1080" min="1">
+            </div>
+            <div class="field">
+              <label>Height</label>
+              <input type="number" id="inp-rect-h" value="1920" min="1">
+            </div>
+          </div>
+
+          <div class="section-title">Transition Parameters</div>
+          <div class="field">
+            <label>Transition Type</label>
+            <select id="inp-transition-type">
+              <option value="cut">Cut (Instantaneous)</option>
+              <option value="smooth">Smooth (Linear Interpolation)</option>
+            </select>
+          </div>
+          <div class="field" id="field-trans-dur">
+            <label>Transition Duration (seconds)</label>
+            <input type="number" id="inp-trans-dur" value="0.5" step="0.1" min="0.05">
+          </div>
+
+          <div class="section-title">Quick Actions</div>
+          <div class="button-stack">
+            <button class="btn btn-secondary" id="btn-center-viewport">Center in Canvas</button>
+            <button class="btn btn-danger" id="btn-delete-event">Delete Current Event</button>
+          </div>
+        </div>
+
+        <!-- Events List Tab -->
+        <div class="tab-content" id="tab-events">
+          <div class="events-list" id="events-list-container"></div>
+        </div>
+
+        <!-- JSON / Code Tab -->
+        <div class="tab-content" id="tab-export">
+          <div class="export-actions">
+            <button class="btn-xs btn-secondary" id="btn-copy-json">Copy JSON</button>
+            <button class="btn-xs btn-primary" id="btn-download-json">Download</button>
+          </div>
+          <textarea id="json-code-view" readonly spellcheck="false"></textarea>
+          <div class="mux-helper">
+            <label>Command line muxing:</label>
+            <div class="code-box" id="mux-cmd-preview">dvm mux in.mp4 timeline.json out.mp4</div>
+          </div>
+        </div>
+      </aside>
+    </main>
+  </div>
+
+  <script src="app.js"></script>
+</body>
+</html>
